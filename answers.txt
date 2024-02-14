@@ -26,8 +26,8 @@ sort -r -k2 -g Year_Mag_Country.tsv | head -n 10
 
 5. How many unique countries are listed in the database? Use cut,sort,uniq, wc and a few pipes | to form a single expression that answers this question.
 
-cut -f3 Year_Mag_Country.tsv | sort -g | uniq | wc -l
-154
+cut -f3 Year_Mag_Country.tsv | sort -g | uniq | tail -n +2 | wc -l
+153
 
 6. Use the grep command to count how many earthquakes in the database are located in the USA or USA TERRITORY
 
