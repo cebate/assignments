@@ -1,0 +1,106 @@
+1. How many earthquakes are listed in the table?
+tail -n +2 signif.txt.tsv | wc -l
+5958
+
+2. How many columns are in the table?
+head -1 signif.txt.tsv | sed 's/\t/,/g' | sed 's/[^,]//g' | wc -c
+47
+
+3. Use the cut command to create a new file that just has the data from the columns for YEAR, EQ_PRIMARY and COUNTRY. Hint: you can get the column numbers by using the head command to view the first row and then visually count the column numbers for the above fields (there is also a unix command to do this, but we didn't cover it in class). Call the new data file 'Year_Mag_Country.tsv'. You can use 'Year_Mag_Country.tsv' for the rest of the exercises below.
+
+cut -f3,10,18 signif.txt.tsv > Year_Mag_Country.tsv
+
+4. EQ_PRIMARY is the assigned earthquake magnitude. With your new file 'Year_Mag_Country.tsv', sort the data based on the numeric value of the EQ_PRIMARY column, then list the lines for the top ten largest earthquakes.
+
+sort -r -k2 -g Year_Mag_Country.tsv | head -n 10
+1960     9.5    CHILE
+1964     9.2    USA
+2011     9.1    JAPAN
+2004     9.1    INDONESIA
+1952     9.0    RUSSIA
+1700     9.0    USA
+2010     8.8    CHILE
+1812     8.8    USA
+1716     8.8    PERU
+1965     8.7    USA
+
+5. How many unique countries are listed in the database? Use cut,sort,uniq, wc and a few pipes | to form a single expression that answers this question.
+
+cut -f3 Year_Mag_Country.tsv | sort -g | uniq | tail -n +2 | wc -l
+153
+
+6. Use the grep command to count how many earthquakes in the database are located in the USA or USA TERRITORY
+
+grep 'USA' Year_Mag_Country.tsv | wc -l
+294
+
+7. Expanding on the previous exercise, refine your command sequence so that it only counts earthquakes in the USA and not ones in USA TERRITORY. Hint: use the -v argument with grep and you may need to call grep more than once.
+
+grep 'USA' Year_Mag_Country.tsv | grep -v 'TERRITORY' | wc -l
+255
+
+8. Compute the total number of earthquakes in each country and then display the top ten countries along with the number of earthquakes. Hint: this can be done with a command sequence similar to exercise 5, but requires a specific argument to be used with uniq.
+
+cut -f3 Year_Mag_Country.tsv | sort -g | uniq -c | sort -r -n | head -n 10
+    579 CHINA
+    400 JAPAN
+    365 IRAN
+    363 INDONESIA
+    324 ITALY
+    319 TURKEY
+    259 GREECE
+    255 USA
+    207 PHILIPPINES
+    193 MEXICO
+
+9. Create a shell script named countEq.sh that returns the total number of earthquakes for a given country, where the country is specified as the option when calling the script. Hint: see the Shell Script notes and use the special variable $1. Paste your script below and give an example calling sequence for country USA.
+
+# Script begins 
+#!/bin/bash
+cut -f3 Year_Mag_Country.tsv | sort -g | uniq -c | sort -r -n | grep $1
+# Script ends
+
+bash countEq.sh 'USA' 
+    255 USA
+     39 USA TERRITORY
+
+OR
+
+# Script begins 
+#!/bin/bash
+cut -f3 Year_Mag_Country.tsv | sort -g | uniq -c | sort -r -n | grep $1 | grep -v 'TERRITORY'
+# Script ends
+
+bash countEq.sh 'USA' 
+    255 USA
+
+10. Create a shell script named countEq_getLargestEq.sh that returns both the total number of earthquakes AND the largest earthquake for a given country, where the country is specified as the option when calling the script. Use the echo command before each command to create labels for each returned value. Paste your script below and give an example calling sequence for country CHILE.
+
+# Script begins
+#!/bin/bash
+
+OUTPUT=$(cut -f3 Year_Mag_Country.tsv | sort -g | uniq -c | sort -r -n | grep $1 | cut -c 5-7)
+COUNTRY=$(cut -f3 Year_Mag_Country.tsv | sort -g | uniq -c | sort -r -n | grep $1 | cut -c 8-20)
+MAG=$(grep $1 Year_Mag_Country.tsv | cut -f2,3 | sort -r -n | head -n 1 | cut -f1)
+
+echo "The number of earthquakes in ${COUNTRY} is ${OUTPUT}. The largest earthquake there was magnitude ${MAG}."
+# Script ends
+
+bash countEq_getLargestEq.sh 'CHILE'
+The number of earthquakes in  CHILE is 192. The largest earthquake there was magnitude  9.5.
+
+11. Compute the total number of earthquakes each year and then output a sorted list of the top ten years with the most earthquakes. Paste your command and the top ten list below.
+
+cut -f1 Year_Mag_Country.tsv | sort -g | uniq -c | sort -r -n | head -n 10
+     78 2004
+     77 2008
+     72 2003
+     67 2007
+     62 2010
+     61 2006
+     60 2009
+     60 2005
+     60 2002
+     59 2011
+
+12. Turn in your homework by sharing it with us on a GitHub repository. Use your repository from Assignment 0. Share this repository with users graheja  and dmw2166. Clone the repository to your laptop. Save your answers to the exercises above in a text file called answers.txt. Use git to commit answers.txt to your repository on your laptop, and then push the changes to the remote repository on GitHub.
